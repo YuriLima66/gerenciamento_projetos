@@ -1,31 +1,4 @@
--- phpMyAdmin SQL Dump
--- version 5.2.1
--- https://www.phpmyadmin.net/
---
--- Host: 127.0.0.1
--- Generation Time: Nov 22, 2024 at 12:15 AM
--- Server version: 10.4.32-MariaDB
--- PHP Version: 8.2.12
-
-SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
-START TRANSACTION;
-SET time_zone = "+00:00";
-
-
-/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
-/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8mb4 */;
-
---
--- Database: `gestao_projetos`
---
-
--- --------------------------------------------------------
-
---
--- Table structure for table `departamentos`
---
+CREATE database gestao_projetos;
 
 CREATE TABLE `departamentos` (
   `id` int(11) NOT NULL,
@@ -234,11 +207,7 @@ INSERT INTO `status` (`id`, `nome`, `descricao`) VALUES
 (8, 'Pendente', 'Tarefa/Projeto pendente de alguma ação.'),
 (9, 'Concluída Parcialmente', 'Tarefa/Projeto concluído parcialmente.');
 
--- --------------------------------------------------------
 
---
--- Table structure for table `tarefas`
---
 
 CREATE TABLE `tarefas` (
   `id` int(11) NOT NULL,
@@ -252,9 +221,6 @@ CREATE TABLE `tarefas` (
   `status_id` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Dumping data for table `tarefas`
---
 
 INSERT INTO `tarefas` (`id`, `projeto_id`, `nome`, `descricao`, `data_inicio`, `data_fim`, `prioridade_id`, `responsavel_id`, `status_id`) VALUES
 (22, 1, 'Desenvolver módulo de cadastro de produtos', 'Criar telas e funcionalidades para cadastro de produtos no sistema de gestão de estoque.', '2023-03-15', '2023-04-15', 1, 2, 1),
@@ -279,33 +245,20 @@ INSERT INTO `tarefas` (`id`, `projeto_id`, `nome`, `descricao`, `data_inicio`, `
 (41, 19, 'Manutenção preventiva dos equipamentos', 'Realizar manutenção preventiva dos equipamentos para garantir o bom funcionamento.', '2024-09-01', '2024-10-31', 1, 19, 1),
 (42, 20, 'Lançamento de uma nova campanha de comunicação', 'Lançamento de uma nova campanha de comunicação para comunicar os valores da empresa.', '2024-10-01', '2025-01-31', 2, 20, 1);
 
---
--- Indexes for dumped tables
---
 
---
--- Indexes for table `departamentos`
---
 ALTER TABLE `departamentos`
   ADD PRIMARY KEY (`id`);
 
---
--- Indexes for table `membros`
---
 ALTER TABLE `membros`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `email` (`email`),
   ADD KEY `departamento_id` (`departamento_id`);
 
---
--- Indexes for table `prioridades`
---
+
 ALTER TABLE `prioridades`
   ADD PRIMARY KEY (`id`);
 
---
--- Indexes for table `projetos`
---
+
 ALTER TABLE `projetos`
   ADD PRIMARY KEY (`id`),
   ADD KEY `lider_id` (`lider_id`),
@@ -315,21 +268,14 @@ ALTER TABLE `projetos`
   ADD KEY `status_id` (`status_id`),
   ADD KEY `FK_projetos_prioridades` (`prioridade_id`);
 
---
--- Indexes for table `recursos`
---
+
 ALTER TABLE `recursos`
   ADD PRIMARY KEY (`id`);
 
---
--- Indexes for table `status`
---
 ALTER TABLE `status`
   ADD PRIMARY KEY (`id`);
 
---
--- Indexes for table `tarefas`
---
+
 ALTER TABLE `tarefas`
   ADD PRIMARY KEY (`id`),
   ADD KEY `projeto_id` (`projeto_id`),
@@ -337,65 +283,38 @@ ALTER TABLE `tarefas`
   ADD KEY `responsavel_id` (`responsavel_id`),
   ADD KEY `status_id` (`status_id`);
 
---
--- AUTO_INCREMENT for dumped tables
---
 
---
--- AUTO_INCREMENT for table `departamentos`
---
 ALTER TABLE `departamentos`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
 
---
--- AUTO_INCREMENT for table `membros`
---
 ALTER TABLE `membros`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
 
---
--- AUTO_INCREMENT for table `prioridades`
---
+
 ALTER TABLE `prioridades`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
---
--- AUTO_INCREMENT for table `projetos`
---
+
 ALTER TABLE `projetos`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
 
---
--- AUTO_INCREMENT for table `recursos`
---
+
 ALTER TABLE `recursos`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
 
---
--- AUTO_INCREMENT for table `status`
---
+
 ALTER TABLE `status`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
---
--- AUTO_INCREMENT for table `tarefas`
---
+
 ALTER TABLE `tarefas`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=43;
 
---
--- Constraints for dumped tables
---
 
---
--- Constraints for table `membros`
---
 ALTER TABLE `membros`
   ADD CONSTRAINT `membros_ibfk_1` FOREIGN KEY (`departamento_id`) REFERENCES `departamentos` (`id`);
 
---
--- Constraints for table `projetos`
---
+
 ALTER TABLE `projetos`
   ADD CONSTRAINT `FK_projetos_prioridades` FOREIGN KEY (`prioridade_id`) REFERENCES `prioridades` (`id`),
   ADD CONSTRAINT `projetos_ibfk_1` FOREIGN KEY (`lider_id`) REFERENCES `membros` (`id`),
@@ -404,9 +323,7 @@ ALTER TABLE `projetos`
   ADD CONSTRAINT `projetos_ibfk_4` FOREIGN KEY (`recurso_principal_id`) REFERENCES `recursos` (`id`),
   ADD CONSTRAINT `projetos_ibfk_5` FOREIGN KEY (`status_id`) REFERENCES `status` (`id`);
 
---
--- Constraints for table `tarefas`
---
+
 ALTER TABLE `tarefas`
   ADD CONSTRAINT `tarefas_ibfk_1` FOREIGN KEY (`projeto_id`) REFERENCES `projetos` (`id`),
   ADD CONSTRAINT `tarefas_ibfk_2` FOREIGN KEY (`prioridade_id`) REFERENCES `prioridades` (`id`),
@@ -414,6 +331,3 @@ ALTER TABLE `tarefas`
   ADD CONSTRAINT `tarefas_ibfk_4` FOREIGN KEY (`status_id`) REFERENCES `status` (`id`);
 COMMIT;
 
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
