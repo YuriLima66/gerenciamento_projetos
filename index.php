@@ -138,51 +138,67 @@ $prioridades = getPrioridades($conn);
             justify-content: space-between;
             width: 60vw;
         }
+        
         .btn{
             margin: 5px;
             width: 95px;
         }
         .container{
+            display:flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center; 
             width: 98vw;
             padding: 10px;
         }
+      .pesquisa {
+    width: 50vw;
+    text-align:center;
+    
+   
+    justify-content: center;
+    align-items: center;
+  
+   
+
+}
         .table{
             width: auto;
             margin-left: 25px;
         }
-     .modal-body{
-    display: flex;
-   
-    flex-direction: column;
-    align-items: center;
-    justify-content: center; 
-    padding: 25px;
-    border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-    gap:20px;
-}
-.modal-body form{
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 20px;
-    width: 100%;
-}
-.modal-body form nav{
-    display: flex;
-    flex-direction:row;
-   justify-content: space-around;
-    gap:55px;
-    width: 80%
-}
-label {
-    text-align: center;
-    width: 15%;
-    white-space: nowrap;
-    display: inline-block;
-    margin-bottom: 0.5rem;
-}
+        .modal-body{
+            display: flex;
+        
+            flex-direction: column;
+            align-items: center;
+            justify-content: center; 
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            gap:20px;
+        }
+        .modal-body form{
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            width: 100%;
+        }
+        .modal-body form nav{
+            display: flex;
+            flex-direction:row;
+        justify-content: space-around;
+            gap:55px;
+            width: 80%
+        }
+        label {
+            text-align: center;
+            width: 15%;
+            white-space: nowrap;
+            display: inline-block;
+            margin-bottom: 0.5rem;
+        }
 
 
         @media (min-width: 576px) {
@@ -222,13 +238,15 @@ label {
 <div class="container">
     <h1>Gerenciamento de Projetos</h1>
 
-    <form method="post" class="mb-3">
-        <div class="form-group">
-            <label for="termo_busca">Pesquisar:</label>
-            <input type="text" class="form-control" id="termo_busca" name="termo_busca" value="<?= isset($_POST['termo_busca']) ? htmlspecialchars($_POST['termo_busca']) : ''; ?>">
-        </div>
-        <button type="submit" class="btn btn-primary">Pesquisar</button>
-    </form>
+    <div class="pesquisa">
+        <form method="post" class="mb-3">
+            <div class="form-group">
+                <label for="termo_busca">Pesquisar:</label>
+                <input type="text" class="form-control" id="termo_busca" name="termo_busca" value="<?= isset($_POST['termo_busca']) ? htmlspecialchars($_POST['termo_busca']) : ''; ?>">
+            </div>
+            <button type="submit" class="btn btn-primary">Pesquisar</button>
+        </form>
+    </div>
 
     <table class="table table-striped table-hover">
         <thead>
@@ -236,8 +254,8 @@ label {
                 <th>ID</th>
                 <th>Nome</th>
                 <th>Descrição</th>
-                <th>Data de Início</th>
-                <th>Data de Término</th>
+                <th>Início</th>
+                <th>Término</th>
                 <th>Status</th>
                 <th>Membro</th>
                 <th>Departamento</th>
