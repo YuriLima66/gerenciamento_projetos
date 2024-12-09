@@ -25,14 +25,14 @@ function getProjetos($conn, $termo_busca = null) {
             LEFT JOIN recursos r ON p.recurso_principal_id = r.id
             LEFT JOIN prioridades pr ON p.prioridade_id = pr.id";
     if ($termo_busca) {
-        $sql .= " WHERE p.nome LIKE :termo_busca OR m.nome LIKE :termo_busca";
+        $sql .= " WHERE p.nome LIKE ? OR m.nome LIKE ?";
     }
-
     $stmt = $conn->prepare($sql);
     if ($termo_busca) {
-        $stmt->bindValue(':termo_busca', '%' . $termo_busca . '%', PDO::PARAM_STR);
+        $stmt->execute(['%' . $termo_busca . '%', '%' . $termo_busca . '%']);
+    } else {
+        $stmt->execute();
     }
-    $stmt->execute();
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
@@ -61,22 +61,10 @@ function getPrioridades($conn) {
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
-
 function editarProjeto($conn, $id, $nome, $descricao, $data_inicio, $data_fim, $status_id, $membro_id, $departamento_id, $recurso_principal_id, $prioridade_id) {
     try {
-        $sql = "UPDATE projetos SET nome = :nome, descricao = :descricao, data_inicio = :data_inicio, data_fim = :data_fim, status_id = :status_id, membro_id = :membro_id, departamento_id = :departamento_id, recurso_principal_id = :recurso_principal_id, prioridade_id = :prioridade_id WHERE id = :id";
-        $stmt = $conn->prepare($sql);
-        $stmt->bindValue(':nome', $nome, PDO::PARAM_STR);
-        $stmt->bindValue(':descricao', $descricao, PDO::PARAM_STR);
-        $stmt->bindValue(':data_inicio', $data_inicio, PDO::PARAM_STR);
-        $stmt->bindValue(':data_fim', $data_fim, PDO::PARAM_STR);
-        $stmt->bindValue(':status_id', $status_id, PDO::PARAM_INT);
-        $stmt->bindValue(':membro_id', $membro_id, PDO::PARAM_INT);
-        $stmt->bindValue(':departamento_id', $departamento_id, PDO::PARAM_INT);
-        $stmt->bindValue(':recurso_principal_id', $recurso_principal_id, PDO::PARAM_INT);
-        $stmt->bindValue(':prioridade_id', $prioridade_id, PDO::PARAM_INT);
-        $stmt->bindValue(':id', $id, PDO::PARAM_INT);
-        $stmt->execute();
+        $stmt = $conn->prepare("UPDATE projetos SET nome = ?, descricao = ?, data_inicio = ?, data_fim = ?, status_id = ?, membro_id = ?, departamento_id = ?, recurso_principal_id = ?, prioridade_id = ? WHERE id = ?");
+        $stmt->execute([$nome, $descricao, $data_inicio, $data_fim, $status_id, $membro_id, $departamento_id, $recurso_principal_id, $prioridade_id, $id]);
         return true;
     } catch (PDOException $e) {
         error_log("Erro ao editar projeto: " . $e->getMessage());
@@ -86,17 +74,14 @@ function editarProjeto($conn, $id, $nome, $descricao, $data_inicio, $data_fim, $
 
 function excluirProjeto($conn, $id) {
     try {
-        $sql = "DELETE FROM projetos WHERE id = :id";
-        $stmt = $conn->prepare($sql);
-        $stmt->bindValue(':id', $id, PDO::PARAM_INT);
-        $stmt->execute();
+        $stmt = $conn->prepare("DELETE FROM projetos WHERE id = ?");
+        $stmt->execute([$id]);
         return true;
     } catch (PDOException $e) {
         error_log("Erro ao excluir projeto: " . $e->getMessage());
         return false;
     }
 }
-
 
 // Processar ações (editar, excluir)
 if (isset($_POST['acao'])) {
@@ -140,7 +125,6 @@ $departamentos = getDepartamentos($conn);
 $recursos = getRecursos($conn);
 $prioridades = getPrioridades($conn);
 
-
 ?>
 <!DOCTYPE html>
 <html>
@@ -148,55 +132,88 @@ $prioridades = getPrioridades($conn);
     <title>Gerenciamento de Projetos</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <style>
-        .edit-form {
-            display: none;
-            background-color: #f8f9fa;
-            padding: 20px;
-            border: 1px solid #dee2e6;
-            border-radius: 5px;
-            margin-bottom: 10px;
-        }
-         .form-inline {
+        /* Estilos CSS */
+        .form-inline {
             flex-flow: row wrap;
             justify-content: space-between;
             width: 60vw;
         }
-      
-      
-        
-        
+        .btn{
+            margin: 5px;
+            width: 95px;
+        }
+        .container{
+            width: 98vw;
+            padding: 10px;
+        }
+        .table{
+            width: auto;
+            margin-left: 25px;
+        }
+     .modal-body{
+    display: flex;
+   
+    flex-direction: column;
+    align-items: center;
+    justify-content: center; 
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    gap:20px;
+}
+.modal-body form{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    width: 100%;
+}
+.modal-body form nav{
+    display: flex;
+    flex-direction:row;
+   justify-content: space-around;
+    gap:55px;
+    width: 80%
+}
+label {
+    text-align: center;
+    width: 15%;
+    white-space: nowrap;
+    display: inline-block;
+    margin-bottom: 0.5rem;
+}
+
+
+        @media (min-width: 576px) {
+            .container, .container-sm {
+                max-width: 90vw;
+            }
+        }
     </style>
     <script>
-        function mostrarFormularioEdicao(id) {
-            var form = document.getElementById("form-edicao-" + id);
-            form.style.display = "block";
-        }
+        function mostrarModalEdicao(id) {
+            var modal = $('#modalEdicao');
+            var projeto = $('#projeto-' + id);
 
-        function esconderFormularioEdicao(id) {
-            var form = document.getElementById("form-edicao-" + id);
-            form.style.display = "none";
+            $('#nomeEdicao').val(projeto.data('nome'));
+            $('#descricaoEdicao').val(projeto.data('descricao'));
+            $('#data_inicioEdicao').val(projeto.data('data_inicio'));
+            $('#data_fimEdicao').val(projeto.data('data_fim'));
+            $('#statusEdicao').val(projeto.data('status_id'));
+            $('#membroEdicao').val(projeto.data('membro_id'));
+            $('#departamentoEdicao').val(projeto.data('departamento_id'));
+            $('#recursoEdicao').val(projeto.data('recurso_id'));
+            $('#prioridadeEdicao').val(projeto.data('prioridade_id'));
+            $('#idEdicao').val(id);
+            modal.modal('show');
         }
 
         function confirmarExclusao(id) {
             if (confirm("Tem certeza que deseja excluir este projeto?")) {
-                var form = document.createElement('form');
-                form.method = 'post';
-                form.action = 'index.php'; // Ou o URL apropriado para o seu script PHP
-
-                var acaoInput = document.createElement('input');
-                acaoInput.type = 'hidden';
-                acaoInput.name = 'acao';
-                acaoInput.value = 'excluir';
-                form.appendChild(acaoInput);
-
-                var idInput = document.createElement('input');
-                idInput.type = 'hidden';
-                idInput.name = 'id';
-                idInput.value = id;
-                form.appendChild(idInput);
-
-                document.body.appendChild(form);
-                form.submit();
+                $.post("index.php", { acao: 'excluir', id: id }, function(data) {
+                    location.reload();
+                });
             }
         }
     </script>
@@ -208,109 +225,141 @@ $prioridades = getPrioridades($conn);
     <form method="post" class="mb-3">
         <div class="form-group">
             <label for="termo_busca">Pesquisar:</label>
-            <input type="text" class="form-control" id="termo_busca" name="termo_busca" value="<?= isset($_POST['termo_busca']) ? $_POST['termo_busca'] : ''; ?>">
+            <input type="text" class="form-control" id="termo_busca" name="termo_busca" value="<?= isset($_POST['termo_busca']) ? htmlspecialchars($_POST['termo_busca']) : ''; ?>">
         </div>
         <button type="submit" class="btn btn-primary">Pesquisar</button>
     </form>
 
     <table class="table table-striped table-hover">
         <thead>
-        <tr>
-            <th>ID</th>
-            <th>Nome</th>
-            <th>Descrição</th>
-            <th>Data de Início</th>
-            <th>Data de Término</th>
-            <th>Status</th>
-            <th>Membro</th>
-            <th>Departamento</th>
-            <th>Recurso Principal</th>
-            <th>Prioridade</th>
-            <th>Ações</th>
-        </tr>
+            <tr>
+                <th>ID</th>
+                <th>Nome</th>
+                <th>Descrição</th>
+                <th>Data de Início</th>
+                <th>Data de Término</th>
+                <th>Status</th>
+                <th>Membro</th>
+                <th>Departamento</th>
+                <th>Recurso Principal</th>
+                <th>Prioridade</th>
+                <th>Ações</th>
+            </tr>
         </thead>
         <tbody>
-        <?php foreach ($projetos as $projeto): ?>
-            <tr>
-                <td><?= $projeto['id']; ?></td>
-                <td><?= $projeto['nome']; ?></td>
-                <td><?= $projeto['descricao']; ?></td>
-                <td><?= $projeto['data_inicio']; ?></td>
-                <td><?= $projeto['data_fim']; ?></td>
-                <td><?= $projeto['status_nome']; ?></td>
-                <td><?= $projeto['membro_nome']; ?></td>
-                <td><?= $projeto['departamento_nome']; ?></td>
-                <td><?= $projeto['recurso_nome'] ?? ''; ?></td>
-                <td><?= $projeto['prioridade_nome'] ?? ''; ?></td>
-                <td>
-                    <button class="btn btn-primary" onclick="mostrarFormularioEdicao(<?= $projeto['id']; ?>)">Editar</button>
-                    <button class="btn btn-danger" onclick="confirmarExclusao(<?= $projeto['id']; ?>)">Excluir</button>
-                </td>
-            </tr>
-            <tr id="form-edicao-<?= $projeto['id']; ?>" class="edit-form">
-                <td colspan="11">
-                    <form method="post" class="form-inline">
-                        <input type="hidden" name="acao" value="editar">
-                        <input type="hidden" name="id" value="<?= $projeto['id']; ?>">
-
-                        <label for="nome-edicao-<?= $projeto['id']; ?>">Nome:</label>
-                        <input type="text" class="form-control" id="nome-edicao-<?= $projeto['id']; ?>" name="nome" value="<?= $projeto['nome']; ?>"><br>
-
-                        <label for="descricao-edicao-<?= $projeto['id']; ?>">Descrição:</label>
-                        <textarea class="form-control" id="descricao-edicao-<?= $projeto['id']; ?>" name="descricao"><?= $projeto['descricao']; ?></textarea><br>
-
-                        <label for="data_inicio-edicao-<?= $projeto['id']; ?>">Data de Início:</label>
-                        <input type="date" class="form-control" id="data_inicio-edicao-<?= $projeto['id']; ?>" name="data_inicio" value="<?= $projeto['data_inicio']; ?>"><br>
-
-                        <label for="data_fim-edicao-<?= $projeto['id']; ?>">Data de Término:</label>
-                        <input type="date" class="form-control" id="data_fim-edicao-<?= $projeto['id']; ?>" name="data_fim" value="<?= $projeto['data_fim']; ?>"><br>
-
-                        <label for="status-edicao-<?= $projeto['id']; ?>">Status:</label>
-                        <select class="form-control" id="status-edicao-<?= $projeto['id']; ?>" name="status_id">
-                            <?php foreach ($status as $s): ?>
-                                <option value="<?= $s['id']; ?>" <?= ($s['id'] == $projeto['status_id']) ? 'selected' : ''; ?>><?= $s['nome']; ?></option>
-                            <?php endforeach; ?>
-                        </select><br>
-
-                        <label for="membro_id-edicao-<?= $projeto['id']; ?>">Membro Responsável:</label>
-                        <select class="form-control" id="membro_id-edicao-<?= $projeto['id']; ?>" name="membro_id">
-                            <?php foreach ($membros as $membro): ?>
-                                <option value="<?= $membro['id']; ?>" <?= ($membro['id'] == $projeto['membro_id']) ? 'selected' : ''; ?>><?= $membro['nome']; ?></option>
-                            <?php endforeach; ?>
-                        </select><br>
-
-                        <label for="departamento_id-edicao-<?= $projeto['id']; ?>">Departamento:</label>
-                        <select class="form-control" id="departamento_id-edicao-<?= $projeto['id']; ?>" name="departamento_id">
-                            <?php foreach ($departamentos as $departamento): ?>
-                                <option value="<?= $departamento['id']; ?>" <?= ($departamento['id'] == $projeto['departamento_id']) ? 'selected' : ''; ?>><?= $departamento['nome']; ?></option>
-                            <?php endforeach; ?>
-                        </select><br>
-
-                        <label for="recurso_principal_id-edicao-<?= $projeto['id']; ?>">Recurso Principal:</label>
-                        <select class="form-control" id="recurso_principal_id-edicao-<?= $projeto['id']; ?>" name="recurso_principal_id">
-                            <option value="">Selecione um Recurso</option>  
-                            <?php foreach ($recursos as $recurso): ?>
-                                <option value="<?= $recurso['id']; ?>" <?= ($recurso['id'] == $projeto['recurso_id']) ? 'selected' : ''; ?>><?= $recurso['nome']; ?></option>
-                            <?php endforeach; ?>
-                        </select><br>
-
-                        <label for="prioridade_id-edicao-<?= $projeto['id']; ?>">Prioridade:</label>
-                        <select class="form-control" id="prioridade_id-edicao-<?= $projeto['id']; ?>" name="prioridade_id">
-                           <option value="">Selecione uma Prioridade</option>
-                            <?php foreach ($prioridades as $prioridade): ?>
-                                <option value="<?= $prioridade['id']; ?>" <?= ($prioridade['id'] == $projeto['prioridade_id']) ? 'selected' : ''; ?>><?= $prioridade['nome']; ?></option>
-                            <?php endforeach; ?>
-                        </select><br>
-
-
-                        <button type="submit" class="btn btn-success">Salvar</button>
-                        <button type="button" class="btn btn-secondary" onclick="esconderFormularioEdicao(<?= $projeto['id']; ?>)">Cancelar</button>
-                    </form>
-                </td>
-            </tr>
-        <?php endforeach; ?>
+            <?php foreach ($projetos as $projeto): ?>
+                <tr id="projeto-<?= $projeto['id']; ?>" data-nome="<?= htmlspecialchars($projeto['nome']); ?>" data-descricao="<?= htmlspecialchars($projeto['descricao']); ?>" data-data_inicio="<?= $projeto['data_inicio']; ?>" data-data_fim="<?= $projeto['data_fim']; ?>" data-status_id="<?= $projeto['status_id']; ?>" data-membro_id="<?= $projeto['membro_id']; ?>" data-departamento_id="<?= $projeto['departamento_id']; ?>" data-recurso_id="<?= $projeto['recurso_id'] ?? ''; ?>" data-prioridade_id="<?= $projeto['prioridade_id'] ?? ''; ?>">
+                    <td><?= $projeto['id']; ?></td>
+                    <td><?= htmlspecialchars($projeto['nome']); ?></td>
+                    <td><?= htmlspecialchars($projeto['descricao']); ?></td>
+                    <td><?= $projeto['data_inicio']; ?></td>
+                    <td><?= $projeto['data_fim']; ?></td>
+                    <td><?= htmlspecialchars($projeto['status_nome']); ?></td>
+                    <td><?= htmlspecialchars($projeto['membro_nome']); ?></td>
+                    <td><?= htmlspecialchars($projeto['departamento_nome']); ?></td>
+                    <td><?= $projeto['recurso_nome'] ?? ''; ?></td>
+                    <td><?= htmlspecialchars($projeto['prioridade_nome']) ?? ''; ?></td>
+                    <td>
+                        <button class="btn btn-primary" data-toggle="modal" data-target="#modalEdicao" onclick="mostrarModalEdicao(<?= $projeto['id']; ?>)">Editar</button>
+                        <button class="btn btn-danger" onclick="confirmarExclusao(<?= $projeto['id']; ?>)">Excluir</button>
+                    </td>
+                </tr>
+            <?php endforeach; ?>
         </tbody>
     </table>
+
+    <!-- Modal -->
+    <div class="modal fade" id="modalEdicao" tabindex="-1" role="dialog" aria-labelledby="modalEdicaoLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable" role="document">  
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalEdicaoLabel">Editar Projeto</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form method="post" action="index.php" class="form">
+                        <input type="hidden" name="acao" value="editar">
+                        <input type="hidden" id="idEdicao" name="id" value="">
+
+                        <nav>
+                            <label for="nomeEdicao">Nome:</label>
+                            <input type="text" class="form-control" id="nomeEdicao" name="nome" required><br>
+                        </nav>
+
+                        <nav>
+                            <label for="descricaoEdicao">Descrição:</label>
+                            <textarea class="form-control" id="descricaoEdicao" name="descricao" required></textarea><br>
+                        </nav>
+
+                        <nav>
+                            <label for="data_inicioEdicao">Data de Início:</label>
+                            <input type="date" class="form-control" id="data_inicioEdicao" name="data_inicio" required><br>
+                        </nav>
+
+                        <nav>
+                            <label for="data_fimEdicao">Data de Término:</label>
+                            <input type="date" class="form-control" id="data_fimEdicao" name="data_fim" required><br>
+                        </nav>
+
+                        <nav>
+                            <label for="statusEdicao">Status:</label>
+                            <select class="form-control" id="statusEdicao" name="status_id" required>
+                                <?php foreach ($status as $s): ?>
+                                    <option value="<?= $s['id']; ?>"><?= htmlspecialchars($s['nome']); ?></option>
+                                <?php endforeach; ?>
+                            </select><br>
+                        </nav>
+
+                        <nav>
+                            <label for="membroEdicao">Membro:</label>
+                            <select class="form-control" id="membroEdicao" name="membro_id" required>
+                                <?php foreach ($membros as $membro): ?>
+                                    <option value="<?= $membro['id']; ?>"><?= htmlspecialchars($membro['nome']); ?></option>
+                                <?php endforeach; ?>
+                            </select><br>
+                        </nav>
+
+                        <nav>
+                            <label for="departamentoEdicao">Departamento:</label>
+                            <select class="form-control" id="departamentoEdicao" name="departamento_id" required>
+                                <?php foreach ($departamentos as $departamento): ?>
+                                    <option value="<?= $departamento['id']; ?>"><?= htmlspecialchars($departamento['nome']); ?></option>
+                                <?php endforeach; ?>
+                            </select><br>
+                        </nav>
+
+                        <nav>
+                            <label for="recursoEdicao">Recurso:</label>
+                            <select class="form-control" id="recursoEdicao" name="recurso_principal_id">
+                                <option value="">Selecione um Recurso</option>
+                                <?php foreach ($recursos as $recurso): ?>
+                                    <option value="<?= $recurso['id']; ?>"><?= htmlspecialchars($recurso['nome']); ?></option>
+                                <?php endforeach; ?>
+                            </select><br>
+                        </nav>
+
+                        <nav>
+                            <label for="prioridadeEdicao">Prioridade:</label>
+                            <select class="form-control" id="prioridadeEdicao" name="prioridade_id" required>
+                                <option value="">Selecione uma Prioridade</option>
+                                <?php foreach ($prioridades as $prioridade): ?>
+                                    <option value="<?= $prioridade['id']; ?>"><?= htmlspecialchars($prioridade['nome']); ?></option>
+                                <?php endforeach; ?>
+                            </select><br>
+                        </nav>
+<button type="submit" class="btn btn-success">Salvar</button>
+
+                      
+                    </form>
+                </div>
+                <div class="modal-footer">  
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
