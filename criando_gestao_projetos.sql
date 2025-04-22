@@ -1,8 +1,8 @@
 CREATE TABLE `departamentos` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,  -- Define a coluna 'id' como inteiro, com 11 dígitos, não nula e com auto-incremento (chave primária gerada automaticamente)
-  `nome` varchar(255) NOT NULL,          -- Define a coluna 'nome' como string de no máximo 255 caracteres, não nula
-  `descricao` text DEFAULT NULL,         -- Define a coluna 'descricao' como texto de tamanho variável, podendo ser nula (valor padrão NULL)
-  PRIMARY KEY (`id`)                     -- Define 'id' como chave primária, garantindo unicidade e indexação
+  `id` int(11) NOT NULL AUTO_INCREMENT,  
+  `nome` varchar(255) NOT NULL,         
+  `descricao` text DEFAULT NULL,         
+  PRIMARY KEY (`id`)                     
 ) 
 
 CREATE TABLE `membros` (
@@ -18,6 +18,7 @@ CREATE TABLE `membros` (
   CONSTRAINT `membros_ibfk_1` FOREIGN KEY (`departamento_id`) REFERENCES `departamentos` (`id`) -- Define 'departamento_id' como chave estrangeira, referenciando a tabela 'departamentos'
 ) 
 
+DROP TABLE IF EXISTS`prioridades`;
 
 CREATE TABLE `prioridades` (
   `id` int(11) NOT NULL AUTO_INCREMENT,  -- Define a coluna 'id' como inteiro, com 11 dígitos, não nula e com auto-incremento (chave primária gerada automaticamente)
@@ -25,6 +26,8 @@ CREATE TABLE `prioridades` (
   `descricao` text DEFAULT NULL,         -- Define a coluna 'descricao' como texto de tamanho variável, podendo ser nula (valor padrão NULL)
   PRIMARY KEY (`id`)                     -- Define 'id' como chave primária, garantindo unicidade e indexação
 ) 
+
+DROP TABLE IF EXISTS`projetos`;
 
 CREATE TABLE `projetos` (
   `id` int(11) NOT NULL AUTO_INCREMENT,  -- Define a coluna 'id' como inteiro, com 11 dígitos, não nula e com auto-incremento (chave primária gerada automaticamente)
@@ -53,6 +56,9 @@ CREATE TABLE `projetos` (
   CONSTRAINT `projetos_ibfk_5` FOREIGN KEY (`status_id`) REFERENCES `status` (`id`)  -- Define 'status_id' como chave estrangeira, referenciando a tabela 'status'
 ) 
 
+DROP TABLE IF EXISTS`recursos`;
+
+
 CREATE TABLE `recursos` (
   `id` int(11) NOT NULL AUTO_INCREMENT,  -- Define a coluna 'id' como inteiro, com 11 dígitos, não nula e com auto-incremento (chave primária gerada automaticamente)
   `tipo` varchar(50) NOT NULL,          -- Define a coluna 'tipo' como string de no máximo 50 caracteres, não nula
@@ -62,6 +68,8 @@ CREATE TABLE `recursos` (
   PRIMARY KEY (`id`)                     -- Define 'id' como chave primária, garantindo unicidade e indexação
 ) 
 
+DROP TABLE IF EXISTS`status`;
+
 
 CREATE TABLE `status` (
   `id` int(11) NOT NULL AUTO_INCREMENT,  -- Define a coluna 'id' como inteiro, com 11 dígitos, não nula e com auto-incremento (chave primária gerada automaticamente)
@@ -69,6 +77,10 @@ CREATE TABLE `status` (
   `descricao` text DEFAULT NULL,         -- Define a coluna 'descricao' como texto de tamanho variável, podendo ser nula (valor padrão NULL)
   PRIMARY KEY (`id`)                     -- Define 'id' como chave primária, garantindo unicidade e indexação
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci; -- Especifica o motor de armazenamento InnoDB, o conjunto de caracteres e o cotejamento.
+
+
+DROP TABLE IF EXISTS`tarefas`;
+
 
 CREATE TABLE `tarefas` (
   `id` int(11) NOT NULL AUTO_INCREMENT,  -- Define a coluna 'id' como inteiro, com 11 dígitos, não nula e com auto-incremento (chave primária gerada automaticamente)
