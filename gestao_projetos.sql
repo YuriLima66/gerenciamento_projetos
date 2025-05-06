@@ -1,4 +1,4 @@
-CREATE database gestao_projetos;
+CREATE DATABASE IF NOT EXISTS gestao_projetos;
 
 CREATE TABLE `departamentos` (
   `id` int(11) NOT NULL,
@@ -71,7 +71,7 @@ INSERT INTO `membros` (`id`, `nome`, `email`, `departamento_id`, `funcao`, `senh
 (17, 'Felipe Rodrigues', 'felipe.rodrigues@empresa.com', 17, 'Coordenador de Segurança', 'senha_criptografada'),
 (18, 'Isabela Silva', 'isabela.silva@empresa.com', 18, 'Gerente de Compras', 'senha_criptografada'),
 (19, 'Gustavo Santos', 'gustavo.santos@empresa.com', 19, 'Técnico de Manutenção', 'senha_criptografada'),
-(20, 'Letícia Costa', 'leticia.costa@empresa.com', 20, 'Analista de Comunicação', 'senha_criptografada');
+(20, 'admin', 'admin@admin.com', 20, 'Analista de Comunicação', 'admin123');
 
 -- --------------------------------------------------------
 
@@ -325,7 +325,7 @@ ALTER TABLE `projetos`
 
 
 ALTER TABLE `tarefas`
-  ADD CONSTRAINT `tarefas_ibfk_1` FOREIGN KEY (`projeto_id`) REFERENCES `projetos` (`id`),
+  ADD CONSTRAINT `tarefas_ibfk_1` FOREIGN KEY (`projeto_id`) REFERENCES `projetos` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `tarefas_ibfk_2` FOREIGN KEY (`prioridade_id`) REFERENCES `prioridades` (`id`),
   ADD CONSTRAINT `tarefas_ibfk_3` FOREIGN KEY (`responsavel_id`) REFERENCES `membros` (`id`),
   ADD CONSTRAINT `tarefas_ibfk_4` FOREIGN KEY (`status_id`) REFERENCES `status` (`id`);

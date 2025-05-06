@@ -1,9 +1,17 @@
 <?php
+header('Content-Type: text/html; charset=utf-8');
+session_start();
+if (!isset($_SESSION['usuario_id'])) {
+    header('Location: login.html');
+    exit();
+}
 require_once 'conexao.php';
 
 try {
     $conn = new PDO("mysql:host=$servername;dbname=$dbname;charset=utf8mb4", $username, $password);
     $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $conn->exec("SET NAMES 'utf8mb4'");
+    $conn->exec("SET CHARACTER SET utf8mb4");
 } catch (PDOException $e) {
     die("Falha na conexão: " . $e->getMessage());
 }
@@ -99,6 +107,7 @@ function excluirProjeto($conn, $id)
         $stmt->execute([$id]);
         return true;
     } catch (PDOException $e) {
+        echo "<script>alert('Erro ao excluir projeto: " . addslashes($e->getMessage()) . "');</script>";
         error_log("Erro ao excluir projeto: " . $e->getMessage());
         return false;
     }
@@ -171,6 +180,7 @@ $prioridades = getPrioridades($conn);
 <html>
 
 <head>
+    <meta charset="UTF-8" />
     <title>Gerenciamento de Projetos</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <style>
@@ -329,7 +339,7 @@ $prioridades = getPrioridades($conn);
                         <td><?= htmlspecialchars($projeto['lider_nome'] ?? ''); ?></td> <!-- Adicionado -->
                         <td><?= htmlspecialchars($projeto['departamento_nome']); ?></td>
                         <td><?= $projeto['recurso_nome'] ?? ''; ?></td>
-                        <td><?= htmlspecialchars($projeto['prioridade_nome']) ?? ''; ?></td>
+                        <td><?= htmlspecialchars($projeto['prioridade_nome'] ?? '') ?></td>
                         <td>
                             <button class="btn btn-primary editar-btn" data-toggle="modal" data-target="#modalEdicao">Editar</button>
                             <form method="post" style="display:inline;">
