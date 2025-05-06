@@ -261,11 +261,14 @@ $prioridades = getPrioridades($conn);
         }
 
         .botaoCriacao {
-            position: fixed;
-            left: 120px;
-            top: 30px;
+            /* Removido position: fixed para alinhar no fluxo normal */
+            margin-bottom: 20px;
             width: 200px;
             padding: 10px;
+            /* Centraliza o botão no container */
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
         }
 
         .mhide {
@@ -290,6 +293,20 @@ $prioridades = getPrioridades($conn);
 </head>
 
 <body>
+    <!-- Menu de Navegação -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light mb-4">
+        <a class="navbar-brand" href="#">Gestão de Projetos</a>
+        <div class="collapse navbar-collapse">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="index.php">Projetos</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="usuarios.php">Usuários</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
     <div class="container">
         <!-- Botão para abrir o modal de criação -->
         <button type="button" class="btn btn-success botaoCriacao" data-toggle="modal" data-target="#modalCriacao">
